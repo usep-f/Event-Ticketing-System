@@ -1,0 +1,162 @@
+/* Main Application Styling */
+.root {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #333333;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 0 1 0 0;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #757575;
+    -fx-alignment: center-left;
+    -fx-padding: 10 15 10 15;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: #F0F2F5;
+}
+
+.nav-button-active {
+    -fx-background-color: #E8EAF6;
+    -fx-text-fill: #2A2A72;
+    -fx-font-weight: bold;
+}
+
+/* Action Buttons */
+.primary-button {
+    -fx-background-color: #3F51B5;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #303F9F;
+}
+
+/* Cards and Panels */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #EEEEEE;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);
+}
+
+.forecast-panel {
+    -fx-background-color: #DDE2EB;
+    -fx-background-radius: 10;
+}
+
+/* Metric Typography */
+.metric-value {
+    -fx-font-size: 28pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2A2A72;
+}
+
+.metric-pending {
+    -fx-text-fill: #D84315;
+}
+
+/* Table Styling */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header {
+    -fx-background-color: #FAFAFA;
+    -fx-border-color: transparent transparent #EEEEEE transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #888888;
+    -fx-font-weight: bold;
+    -fx-font-size: 9pt;
+}
+
+.table-row-cell {
+    -fx-border-color: transparent transparent #F5F5F5 transparent;
+}
+
+/* Status Badges */
+.status-badge {
+    -fx-background-radius: 12;
+    -fx-padding: 4 10 4 10;
+    -fx-font-size: 9pt;
+    -fx-font-weight: bold;
+}
+
+.status-active {
+    -fx-background-color: #3F51B5;
+    -fx-text-fill: white;
+}
+
+.status-pending {
+    -fx-background-color: #795548;
+    -fx-text-fill: white;
+}
+
+/* Metric Outline Cards */
+.metric-card-outline {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+/* Specific Border Accents for Metrics */
+.metric-card-outline:focused { -fx-border-color: #3F51B5; }
+
+/* Grid/List Toggle Buttons */
+.toggle-button-left {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5 0 0 5;
+    -fx-background-radius: 5 0 0 5;
+}
+
+.toggle-button-right {
+    -fx-background-color: #F4F5F8;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 0 5 5 0;
+    -fx-background-radius: 0 5 5 0;
+}
+
+/* Sidebar Call-to-Action Card */
+.action-card-blue {
+    -fx-background-color: #2A2A72;
+    -fx-background-radius: 12;
+}
+
+.secondary-action-button {
+    -fx-background-color: white;
+    -fx-text-fill: #2A2A72;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+}
+
+/* Inner Card Stats */
+.inner-stats-box {
+    -fx-background-color: #F8F9FA;
+    -fx-padding: 8;
+    -fx-background-radius: 5;
+}
+
+/* Search Field with Rounded Corners */
+.search-field {
+    -fx-background-color: #E9ECEF;
+    -fx-background-radius: 15;
+    -fx-padding: 5 15 5 15;
+}

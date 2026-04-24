@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<BorderPane prefHeight="900.0" prefWidth="1200.0" style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+   <left>
+      <VBox prefWidth="250.0" spacing="15.0" styleClass="sidebar">
+         <padding><Insets bottom="30.0" left="20.0" right="20.0" top="30.0" /></padding>
+         <children>
+            <Label text="The Curator" textFill="#2A2A72"><font><Font name="System Bold" size="20.0" /></font></Label>
+            <Button maxWidth="Infinity" styleClass="nav-button" text="Dashboard" />
+            <Button maxWidth="Infinity" styleClass="nav-button-active" text="Events" />
+            <Button maxWidth="Infinity" styleClass="nav-button" text="Ticketing" />
+            <Button maxWidth="Infinity" styleClass="nav-button" text="Analytics" />
+            <Button maxWidth="Infinity" styleClass="nav-button" text="Settings" />
+            <Region VBox.vgrow="ALWAYS" />
+            <Button maxWidth="Infinity" styleClass="primary-button" text="Create Event" />
+         </children>
+      </VBox>
+   </left>
+   <center>
+      <VBox spacing="20.0">
+         <padding><Insets bottom="20.0" left="30.0" right="30.0" top="20.0" /></padding>
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+               <children>
+                  <Label text="EVENTS MANAGEMENT" textFill="#2A2A72">
+                     <font><Font name="System Bold" size="18.0" /></font>
+                  </Label>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <TextField prefWidth="250.0" promptText="Search events..." styleClass="search-field" />
+                  <Label text="Help" />
+                  <Label text="Curator Profile" />
+               </children>
+            </HBox>
+            <HBox spacing="15.0">
+               <children>
+                  <VBox prefWidth="240.0" styleClass="metric-card-outline" HBox.hgrow="ALWAYS">
+                     <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+                     <children>
+                        <Label text="TOTAL EVENTS" textFill="#888888" />
+                        <Label text="24" styleClass="metric-value" />
+                     </children>
+                  </VBox>
+                  <VBox prefWidth="240.0" styleClass="metric-card-outline" HBox.hgrow="ALWAYS">
+                     <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+                     <children>
+                        <Label text="ACTIVE TICKETS" textFill="#888888" />
+                        <Label text="1.8k" styleClass="metric-value" />
+                     </children>
+                  </VBox>
+                  <VBox prefWidth="240.0" styleClass="metric-card-outline" HBox.hgrow="ALWAYS">
+                     <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+                     <children>
+                        <Label text="PENDING INVOICES" textFill="#888888" />
+                        <Label text="08" styleClass="metric-value" />
+                     </children>
+                  </VBox>
+                  <VBox prefWidth="240.0" styleClass="metric-card-outline" HBox.hgrow="ALWAYS">
+                     <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+                     <children>
+                        <Label text="TOTAL REVENUE" textFill="#888888" />
+                        <Label text="\$142k" styleClass="metric-value" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Button styleClass="toggle-button-left" text="Grid View" />
+                  <Button styleClass="toggle-button-right" text="List View" />
+                  <ComboBox prefWidth="120.0" promptText="All Status" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Label text="Showing 1-6 of 24 curated events" textFill="#888888" />
+               </children>
+            </HBox>
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+               <content>
+                  <GridPane hgap="20.0" vgap="20.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="350.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <HBox prefHeight="350.0" styleClass="card" GridPane.columnSpan="2">
+                           <children>
+                              <Rectangle fill="#2A2A72" height="350.0" width="250.0" />
+                              <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <padding><Insets bottom="20.0" left="20.0" right="20.0" top="20.0" /></padding>
+                                 <children>
+                                    <Label text="OCTOBER 24, 2024" textFill="#3F51B5" />
+                                    <Label text="Metropolitan Jazz Night: The Blue Note Sessions" wrapText="true">
+                                       <font><Font name="System Bold" size="22.0" /></font>
+                                    </Label>
+                                    <Region VBox.vgrow="ALWAYS" />
+                                    <HBox spacing="20.0">
+                                       <children>
+                                          <VBox styleClass="inner-stats-box">
+                                             <children>
+                                                <Label text="CAPACITY" textFill="#888888" />
+                                                <Label text="450 / 500">
+                                                   <font><Font name="System Bold" size="14.0" /></font>
+                                                </Label>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <VBox prefWidth="280.0" styleClass="action-card-blue" GridPane.columnIndex="2">
+                           <padding><Insets bottom="20.0" left="20.0" right="20.0" top="20.0" /></padding>
+                           <children>
+                              <Label text="Needs Attention" textFill="white">
+                                 <font><Font name="System Bold" size="18.0" /></font>
+                              </Label>
+                              <Region VBox.vgrow="ALWAYS" />
+                              <Button maxWidth="Infinity" styleClass="secondary-action-button" text="RESOLVE NOW" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </GridPane>
+               </content>
+            </ScrollPane>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

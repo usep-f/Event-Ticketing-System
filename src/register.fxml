@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #F3F4F6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fx.com/fxml/1" fx:controller="RegisterController">
+    <children>
+        <VBox alignment="CENTER" layoutX="225.0" layoutY="30.0" prefWidth="350.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+            <children>
+                <VBox alignment="CENTER" spacing="5.0">
+                    <children>
+                        <Label text="JOIN US" textFill="#1a237e">
+                            <font>
+                                <Font name="System Bold" size="24.0" />
+                            </font>
+                        </Label>
+                        <Label text="Create your account to start booking." textFill="#757575" />
+                    </children>
+                </VBox>
+
+                <!-- Full Name Field -->
+                <VBox spacing="5.0">
+                    <children>
+                        <Label text="Full Name" textFill="#424242"><font><Font name="System Bold" size="12.0" /></font></Label>
+                        <TextField fx:id="txtFullName" prefHeight="40.0" promptText="Enter Full Name" style="-fx-background-color: #EEEEEE; -fx-background-radius: 5;" />
+                    </children>
+                </VBox>
+
+                <!-- Username Field -->
+                <VBox spacing="5.0">
+                    <children>
+                        <Label text="Username" textFill="#424242"><font><Font name="System Bold" size="12.0" /></font></Label>
+                        <TextField fx:id="txtUsername" prefHeight="40.0" promptText="Choose a Username" style="-fx-background-color: #EEEEEE; -fx-background-radius: 5;" />
+                    </children>
+                </VBox>
+
+                <!-- Password Field -->
+                <VBox spacing="5.0">
+                    <children>
+                        <Label text="Password" textFill="#424242"><font><Font name="System Bold" size="12.0" /></font></Label>
+                        <PasswordField fx:id="txtPassword" prefHeight="40.0" promptText="••••••••" style="-fx-background-color: #EEEEEE; -fx-background-radius: 5;" />
+                    </children>
+                </VBox>
+
+                <Button fx:id="btnRegister" onAction="#handleRegister" prefHeight="45.0" prefWidth="310.0" style="-fx-background-color: #3F51B5; -fx-background-radius: 5;" text="Create Account" textFill="white">
+                    <font><Font name="System Bold" size="14.0" /></font>
+                </Button>
+
+                <HBox alignment="CENTER" spacing="5.0">
+                    <children>
+                        <Label text="Already have an account?" textFill="#757575" />
+                        <Hyperlink onAction="#switchToLogin" text="Sign In" textFill="#3F51B5" />
+                    </children>
+                </HBox>
+            </children>
+            <padding>
+                <Insets bottom="30.0" left="20.0" right="20.0" top="30.0" />
+            </padding>
+        </VBox>
+    </children>
+</AnchorPane>

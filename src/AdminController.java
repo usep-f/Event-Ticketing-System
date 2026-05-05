@@ -6,64 +6,142 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.*;
 
 public class AdminController {
 
-    // Form fields
+    // Panes and Sidebar
+    @FXML private VBox paneEvents, paneUsers;
+    @FXML private Button btnViewEvents, btnViewUsers;
+
+    // Event Management Fields
     @FXML private TextField txtEventName, txtEventDate, txtPrice;
     @FXML private ComboBox<String> comboVenue;
-
-    // Table fields
     @FXML private TableView<Event> tblAdminEvents;
     @FXML private TableColumn<Event, Integer> colId;
     @FXML private TableColumn<Event, String> colName, colVenue;
     @FXML private TableColumn<Event, Double> colPrice;
 
-    private ObservableList<Event> adminEventList = FXCollections.observableArrayList();
+    // User Management Fields
+    @FXML private TableView<User> tblUsers;
+    @FXML private TableColumn<User, String> colUserUsername, colUserFullName, colUserTier;
+    @FXML private TableColumn<User, Double> colUserBalance;
+    @FXML private TextField txtEditFullName, txtEditUsername, txtEditPassword;
+
+    private String selectedOldUsername = ""; // Tracks the username before it is edited
 
     @FXML
     public void initialize() {
-        // 1. Setup Venue Blueprints
-        comboVenue.setItems(FXCollections.observableArrayList(
-                "The Glass Pavilion",
-                "Grand Atrium",
-                "Indigo Concert Hall"
-        ));
+        // 1. Setup Venue ComboBox
+        comboVenue.setItems(FXCollections.observableArrayList("The Glass Pavilion", "Grand Atrium", "Indigo Concert Hall"));
 
-        // 2. Setup Table Columns (Mapping to Event.java getters)
+        // 2. Setup Event Table
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colVenue.setCellValueFactory(new PropertyValueFactory<>("venue"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        // 3. Initial Load
+        // 3. Setup User Table
+        colUserUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
+        colUserFullName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        colUserTier.setCellValueFactory(new PropertyValueFactory<>("tier"));
+        colUserBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
+
+        // 4. Selection Listener for User Table
+        tblUsers.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                txtEditFullName.setText(newVal.getFullName());
+                txtEditUsername.setText(newVal.getUsername());
+                selectedOldUsername = newVal.getUsername();
+            }
+        });
+
         loadEvents();
+        loadUsers();
     }
 
-    private void loadEvents() {
-        adminEventList.clear();
-        String query = "SELECT * FROM events";
+    // --- NAVIGATION ---
+    @FXML private void showEventsPane() {
+        paneEvents.setVisible(true); paneUsers.setVisible(false);
+        btnViewEvents.setStyle("-fx-background-color: #3949AB; -fx-text-fill: white;");
+        btnViewUsers.setStyle("-fx-background-color: transparent; -fx-text-fill: #c5cae9;");
+    }
+
+    @FXML private void showUsersPane() {
+        paneEvents.setVisible(false); paneUsers.setVisible(true);
+        btnViewUsers.setStyle("-fx-background-color: #3949AB; -fx-text-fill: white;");
+        btnViewEvents.setStyle("-fx-background-color: transparent; -fx-text-fill: #c5cae9;");
+        loadUsers();
+    }
+
+    // --- USER MANAGEMENT ---
+    private void loadUsers() {
+        ObservableList<User> userList = FXCollections.observableArrayList();
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
+             ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE role = 'User'")) {
             while (rs.next()) {
-                adminEventList.add(new Event(
-                        rs.getInt("event_id"),
-                        rs.getString("event_name"),
-                        rs.getString("event_date"),
-                        rs.getString("venue"),
-                        rs.getDouble("price"),
-                        rs.getInt("available_seats")
-                ));
+                userList.add(new User(rs.getString("username"), rs.getString("full_name"),
+                        "User", rs.getString("tier"), rs.getDouble("balance")));
             }
-            tblAdminEvents.setItems(adminEventList);
+            tblUsers.setItems(userList);
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    @FXML
+    private void handleUpdateUser() {
+        if (selectedOldUsername.isEmpty()) return;
+        String nName = txtEditFullName.getText();
+        String nUser = txtEditUsername.getText();
+        String nPass = txtEditPassword.getText();
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            PreparedStatement ps;
+            if (nPass.isEmpty()) {
+                ps = conn.prepareStatement("UPDATE users SET full_name = ?, username = ? WHERE username = ?");
+                ps.setString(1, nName); ps.setString(2, nUser); ps.setString(3, selectedOldUsername);
+            } else {
+                ps = conn.prepareStatement("UPDATE users SET full_name = ?, username = ?, password = ? WHERE username = ?");
+                ps.setString(1, nName); ps.setString(2, nUser); ps.setString(3, nPass); ps.setString(4, selectedOldUsername);
+            }
+            ps.executeUpdate();
+            showAlert("Success", "User credentials updated successfully.");
+            loadUsers();
         } catch (SQLException e) {
-            e.printStackTrace();
+            showAlert("Error", "Could not update user. Username may already exist.");
         }
+    }
+
+    @FXML
+    private void handleDeleteUser() {
+        User sel = tblUsers.getSelectionModel().getSelectedItem();
+        if (sel == null) return;
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Permanently delete " + sel.getFullName() + "?", ButtonType.YES, ButtonType.NO);
+        if (confirm.showAndWait().get() == ButtonType.YES) {
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                PreparedStatement ps = conn.prepareStatement("DELETE FROM users WHERE username = ?");
+                ps.setString(1, sel.getUsername());
+                ps.executeUpdate();
+                loadUsers();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    // --- EVENT MANAGEMENT ---
+    private void loadEvents() {
+        ObservableList<Event> list = FXCollections.observableArrayList();
+        try (Connection conn = DatabaseConnection.getConnection();
+             ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM events")) {
+            while (rs.next()) {
+                list.add(new Event(rs.getInt("event_id"), rs.getString("event_name"),
+                        rs.getString("event_date"), rs.getString("venue"), rs.getDouble("price"), rs.getInt("available_seats")));
+            }
+            tblAdminEvents.setItems(list);
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -72,89 +150,39 @@ public class AdminController {
         String date = txtEventDate.getText();
         String venue = comboVenue.getValue();
         String priceStr = txtPrice.getText();
+        if (name.isEmpty() || venue == null || priceStr.isEmpty()) return;
 
-        if (name.isEmpty() || date.isEmpty() || venue == null || priceStr.isEmpty()) {
-            showAlert("Input Error", "Please fill in all fields.");
-            return;
-        }
-
-        try {
-            double price = Double.parseDouble(priceStr);
-
-            // Logic: Set capacity based on venue choice
-            int capacity = switch (venue) {
-                case "The Glass Pavilion" -> 25;
-                case "Grand Atrium" -> 48;
-                case "Indigo Concert Hall" -> 100;
-                default -> 0;
-            };
-
-            String sql = "INSERT INTO events (event_name, event_date, venue, price, available_seats) VALUES (?, ?, ?, ?, ?)";
-            try (Connection conn = DatabaseConnection.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-
-                ps.setString(1, name);
-                ps.setString(2, date);
-                ps.setString(3, venue);
-                ps.setDouble(4, price);
-                ps.setInt(5, capacity);
-
-                ps.executeUpdate();
-                showAlert("Success", "Event '" + name + "' added to database.");
-
-                // Clear fields and refresh
-                txtEventName.clear();
-                txtEventDate.clear();
-                txtPrice.clear();
-                loadEvents();
-            }
-        } catch (NumberFormatException e) {
-            showAlert("Format Error", "Please enter a valid number for price.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        int cap = venue.equals("Indigo Concert Hall") ? 100 : venue.equals("Grand Atrium") ? 48 : 25;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO events (event_name, event_date, venue, price, available_seats) VALUES (?,?,?,?,?)");
+            ps.setString(1, name); ps.setString(2, date); ps.setString(3, venue);
+            ps.setDouble(4, Double.parseDouble(priceStr)); ps.setInt(5, cap);
+            ps.executeUpdate();
+            loadEvents();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
     private void handleDeleteEvent() {
-        Event selected = tblAdminEvents.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Selection Error", "Please select an event from the table first.");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete " + selected.getName() + "?", ButtonType.YES, ButtonType.NO);
-        if (confirm.showAndWait().get() == ButtonType.YES) {
-            try (Connection conn = DatabaseConnection.getConnection()) {
-                PreparedStatement ps = conn.prepareStatement("DELETE FROM events WHERE event_id = ?");
-                ps.setInt(1, selected.getId());
-                ps.executeUpdate();
-                loadEvents();
-            } catch (SQLException e) {
-                showAlert("Error", "Cannot delete event. It may have active bookings.");
-            }
-        }
+        Event sel = tblAdminEvents.getSelectionModel().getSelectedItem();
+        if (sel == null) return;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            conn.prepareStatement("DELETE FROM events WHERE event_id = " + sel.getId()).executeUpdate();
+            loadEvents();
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     @FXML
-    private void handleLogout() {
-        try {
-            UserSession.cleanUserSession();
-            Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
-            Stage stage = (Stage) tblAdminEvents.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Ticketing System Login");
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void handleLogout() throws IOException {
+        UserSession.cleanUserSession();
+        Stage s = (Stage) tblAdminEvents.getScene().getWindow();
+        s.setScene(new Scene(FXMLLoader.load(getClass().getResource("/login.fxml"))));
+        s.setTitle("Login");
     }
 
     private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, content);
         alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
         alert.showAndWait();
     }
 }

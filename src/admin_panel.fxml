@@ -6,48 +6,78 @@
 
 <AnchorPane prefHeight="600.0" prefWidth="900.0" style="-fx-background-color: #EBEDF0;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fx.com/fxml/1" fx:controller="AdminController">
     <children>
-        <!-- Sidebar (Consistent with Main) -->
-        <VBox prefHeight="600.0" prefWidth="220.0" style="-fx-background-color: #1A237E;" spacing="10">
+        <!-- Sidebar Navigation -->
+        <VBox prefHeight="600.0" prefWidth="220.0" style="-fx-background-color: #1A237E;" spacing="5">
             <children>
                 <Label text="ADMIN CENTER" textFill="WHITE" style="-fx-padding: 30 20;">
                     <font><Font name="System Bold" size="18.0" /></font>
                 </Label>
-                <Button onAction="#handleLogout" prefWidth="220" style="-fx-background-color: transparent;" text="⬅ Logout" textFill="WHITE" />
+                <Button fx:id="btnViewEvents" onAction="#showEventsPane" prefWidth="220" style="-fx-background-color: #3949AB; -fx-text-fill: white;" text="📅 Manage Events" />
+                <Button fx:id="btnViewUsers" onAction="#showUsersPane" prefWidth="220" style="-fx-background-color: transparent; -fx-text-fill: #c5cae9;" text="👥 Manage Users" />
+                <Region VBox.vgrow="ALWAYS" />
+                <Button onAction="#handleLogout" prefWidth="220" style="-fx-background-color: transparent;" text="↳ Logout" textFill="#c5cae9" />
             </children>
         </VBox>
 
-        <!-- Main Content -->
-        <VBox layoutX="240.0" layoutY="20.0" prefHeight="560.0" prefWidth="640.0" spacing="15.0">
+        <!-- Content Area -->
+        <StackPane layoutX="240.0" layoutY="20.0" prefHeight="560.0" prefWidth="640.0">
             <children>
-                <Label text="Event Management" textFill="#1a237e"><font><Font name="System Bold" size="24.0" /></font></Label>
-
-                <!-- Event Entry Form -->
-                <GridPane hgap="10" vgap="10" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
+                <!-- EVENT MANAGEMENT PANE -->
+                <VBox fx:id="paneEvents" spacing="15.0">
                     <children>
-                        <TextField fx:id="txtEventName" promptText="Event Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                        <TextField fx:id="txtEventDate" promptText="Date (e.g. Oct 24, 2025)" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                        <ComboBox fx:id="comboVenue" promptText="Select Venue" prefWidth="200" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                        <TextField fx:id="txtPrice" promptText="Base Price" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Button onAction="#handleAddEvent" prefWidth="150" style="-fx-background-color: #2E7D32;" text="➕ Add Event" textFill="WHITE" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <Label text="Event Management" textFill="#1a237e"><font><Font name="System Bold" size="24.0" /></font></Label>
+                        <GridPane hgap="10" vgap="10" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
+                            <children>
+                                <TextField fx:id="txtEventName" promptText="Event Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <TextField fx:id="txtEventDate" promptText="Date" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                <ComboBox fx:id="comboVenue" promptText="Select Venue" prefWidth="200" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <TextField fx:id="txtPrice" promptText="Price" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                <Button onAction="#handleAddEvent" prefWidth="150" style="-fx-background-color: #2E7D32;" text="➕ Add Event" textFill="WHITE" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                            </children>
+                        </GridPane>
+                        <TableView fx:id="tblAdminEvents" prefHeight="350.0">
+                            <columns>
+                                <TableColumn fx:id="colId" prefWidth="50" text="ID" />
+                                <TableColumn fx:id="colName" prefWidth="250" text="Event Name" />
+                                <TableColumn fx:id="colVenue" prefWidth="150" text="Venue" />
+                                <TableColumn fx:id="colPrice" prefWidth="100" text="Price" />
+                            </columns>
+                        </TableView>
+                        <Button onAction="#handleDeleteEvent" style="-fx-background-color: #D32F2F;" text="🗑 Delete Selected Event" textFill="WHITE" />
                     </children>
-                </GridPane>
+                </VBox>
 
-                <!-- Current Events Table -->
-                <TableView fx:id="tblAdminEvents" prefHeight="300.0" prefWidth="640.0">
-                    <columns>
-                        <TableColumn fx:id="colId" prefWidth="50" text="ID" />
-                        <TableColumn fx:id="colName" prefWidth="200" text="Event Name" />
-                        <TableColumn fx:id="colVenue" prefWidth="150" text="Venue" />
-                        <TableColumn fx:id="colPrice" prefWidth="100" text="Price" />
-                    </columns>
-                </TableView>
-
-                <HBox spacing="10" alignment="CENTER_RIGHT">
+                <!-- USER MANAGEMENT PANE -->
+                <VBox fx:id="paneUsers" spacing="15.0" visible="false">
                     <children>
-                        <Button onAction="#handleDeleteEvent" style="-fx-background-color: #D32F2F;" text="🗑 Delete Selected" textFill="WHITE" />
+                        <Label text="User Account Management" textFill="#1a237e"><font><Font name="System Bold" size="24.0" /></font></Label>
+                        <TableView fx:id="tblUsers" prefHeight="350.0">
+                            <columns>
+                                <TableColumn fx:id="colUserUsername" prefWidth="120" text="Username" />
+                                <TableColumn fx:id="colUserFullName" prefWidth="200" text="Full Name" />
+                                <TableColumn fx:id="colUserTier" prefWidth="100" text="Tier" />
+                                <TableColumn fx:id="colUserBalance" prefWidth="120" text="Balance" />
+                            </columns>
+                        </TableView>
+
+                        <!-- Account Editor Form -->
+                        <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: #E0E0E0;">
+                            <children>
+                                <Label text="Modify Selected Account" style="-fx-font-weight: bold;" textFill="#757575" />
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <children>
+                                        <TextField fx:id="txtEditFullName" promptText="Full Name" prefWidth="160"/>
+                                        <TextField fx:id="txtEditUsername" promptText="Username" prefWidth="130"/>
+                                        <TextField fx:id="txtEditPassword" promptText="New Password" prefWidth="130"/>
+                                        <Button onAction="#handleUpdateUser" style="-fx-background-color: #3949AB;" text="Update" textFill="WHITE" />
+                                        <Button onAction="#handleDeleteUser" style="-fx-background-color: #D32F2F;" text="Delete User" textFill="WHITE" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
                     </children>
-                </HBox>
+                </VBox>
             </children>
-        </VBox>
+        </StackPane>
     </children>
 </AnchorPane>

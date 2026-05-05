@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="550.0" prefWidth="450.0" style="-fx-background-color: white; -fx-background-radius: 15;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fx.com/fxml/1" fx:controller="SeatMapController">
+<AnchorPane prefHeight="600.0" prefWidth="450.0" style="-fx-background-color: white; -fx-background-radius: 15;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fx.com/fxml/1" fx:controller="SeatMapController">
     <children>
         <VBox alignment="TOP_CENTER" spacing="15.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
             <children>
@@ -20,7 +14,32 @@
                         <Label fx:id="lblEventName" text="Event Name" textFill="#1a237e">
                             <font><Font name="System Bold" size="18.0" /></font>
                         </Label>
-                        <Label text="Please select your preferred seat" textFill="#757575" />
+                        <Label text="Select your preferred seat" textFill="#757575" />
+                    </children>
+                </VBox>
+
+                <!-- Dynamic Legend Box -->
+                <VBox spacing="8" style="-fx-background-color: #F8F9FA; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #E0E0E0; -fx-border-radius: 10;">
+                    <children>
+                        <Label text="YOUR TIER PRICING" textFill="#757575">
+                            <font><Font name="System Bold" size="9.0" /></font>
+                        </Label>
+                        <HBox alignment="CENTER" spacing="15.0">
+                            <children>
+                                <HBox alignment="CENTER" spacing="5.0">
+                                    <children>
+                                        <Region prefHeight="12.0" prefWidth="12.0" style="-fx-background-color: #C8E6C9; -fx-background-radius: 3; -fx-border-color: #2E7D32;" />
+                                        <Label fx:id="lblRegularPrice" text="Regular: $0.00" style="-fx-font-size: 10;" />
+                                    </children>
+                                </HBox>
+                                <HBox alignment="CENTER" spacing="5.0">
+                                    <children>
+                                        <Region prefHeight="12.0" prefWidth="12.0" style="-fx-background-color: #FFF9C4; -fx-background-radius: 3; -fx-border-color: #FBC02D;" />
+                                        <Label fx:id="lblVipPrice" text="VIP (Row A): $0.00" style="-fx-font-size: 10;" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </HBox>
                     </children>
                 </VBox>
 
@@ -28,8 +47,7 @@
                     <font><Font name="System Bold" size="10.0" /></font>
                 </Label>
 
-                <!-- DYNAMIC SCROLLABLE GRID -->
-                <ScrollPane fitToWidth="true" prefHeight="300.0" style="-fx-background-color: transparent; -fx-border-color: #EEEEEE; -fx-border-radius: 5;">
+                <ScrollPane fitToWidth="true" prefHeight="250.0" style="-fx-background-color: transparent;">
                     <content>
                         <GridPane fx:id="gridSeats" alignment="CENTER" hgap="8.0" vgap="8.0">
                             <padding><Insets bottom="10" left="10" right="10" top="10" /></padding>
@@ -37,36 +55,16 @@
                     </content>
                 </ScrollPane>
 
-                <HBox alignment="CENTER" spacing="20.0">
+                <VBox alignment="CENTER" spacing="10">
                     <children>
-                        <HBox alignment="CENTER" spacing="5.0">
-                            <children>
-                                <Region prefHeight="12.0" prefWidth="12.0" style="-fx-background-color: #C8E6C9; -fx-background-radius: 3; -fx-border-color: #2E7D32; -fx-border-radius: 3;" />
-                                <Label text="Available" style="-fx-font-size: 10;" />
-                            </children>
-                        </HBox>
-                        <HBox alignment="CENTER" spacing="5.0">
-                            <children>
-                                <Region prefHeight="12.0" prefWidth="12.0" style="-fx-background-color: #EF9A9A; -fx-background-radius: 3; -fx-border-color: #B71C1C; -fx-border-radius: 3;" />
-                                <Label text="Occupied" style="-fx-font-size: 10;" />
-                            </children>
-                        </HBox>
-                        <HBox alignment="CENTER" spacing="5.0">
-                            <children>
-                                <Region prefHeight="12.0" prefWidth="12.0" style="-fx-background-color: #FFEB3B; -fx-background-radius: 3; -fx-border-color: #F57F17; -fx-border-radius: 3;" />
-                                <Label text="Selected" style="-fx-font-size: 10;" />
-                            </children>
-                        </HBox>
+                        <Label fx:id="lblSelectedSeat" text="Select a seat to see total" textFill="#3949AB">
+                            <font><Font name="System Bold" size="14.0" /></font>
+                        </Label>
+                        <Button fx:id="btnConfirm" onAction="#handleConfirm" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #1A237E; -fx-background-radius: 5;" text="Confirm Selection" textFill="WHITE">
+                            <font><Font name="System Bold" size="13.0" /></font>
+                        </Button>
                     </children>
-                </HBox>
-
-                <Label fx:id="lblSelectedSeat" text="Selected Seat: None" textFill="#3949AB">
-                    <font><Font name="System Bold" size="14.0" /></font>
-                </Label>
-
-                <Button fx:id="btnConfirm" onAction="#handleConfirm" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #1A237E; -fx-background-radius: 5;" text="Confirm Selection" textFill="WHITE">
-                    <font><Font name="System Bold" size="13.0" /></font>
-                </Button>
+                </VBox>
             </children>
         </VBox>
     </children>

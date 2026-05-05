@@ -6,121 +6,127 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.*;
-import javafx.scene.control.ButtonType;
 
 public class TicketingController {
 
-    @FXML private Label lblWelcome, lblViewTitle, lblTier, lblBalance;
+    @FXML private Label lblWelcome, lblTableTitle, lblTier, lblBalance;
+    @FXML private TextField txtSearch;
+    @FXML private Button btnBrowse, btnMyTickets, btnBook, btnCancel, btnDownload;
+
+    // Table 1: Browse Events
     @FXML private TableView<Event> tblEvents;
     @FXML private TableColumn<Event, String> colName, colDate, colVenue, colSeats;
     @FXML private TableColumn<Event, Double> colPrice;
-    @FXML private Button btnBrowse, btnMyTickets, btnBook, btnCancel;
-    @FXML private TextField txtSearch;
-    @FXML private Button btnAdmin;
+
+    // Table 2: My Booked Tickets
+    @FXML private TableView<Ticket> tblBookings;
+    @FXML private TableColumn<Ticket, Integer> colTicketId;
+    @FXML private TableColumn<Ticket, String> colBookedEvent, colBookedDate, colBookedSeat;
+    @FXML private TableColumn<Ticket, Double> colPaid;
 
     private ObservableList<Event> allEvents = FXCollections.observableArrayList();
 
+    @FXML
     public void initialize() {
         refreshHeader();
 
-        if (UserSession.getInstance() != null) {
-            User u = UserSession.getInstance().getCurrentUser();
-            lblWelcome.setText("Welcome, " + u.getFullName());
-            lblTier.setText(u.getTier().toUpperCase() + " TIER");
-            lblBalance.setText("Wallet: $" + String.format("%.2f", u.getBalance()));
-
-            // --- ADD THIS SECURITY CHECK ---
-            if (u.getRole().equalsIgnoreCase("Admin")) {
-                btnAdmin.setVisible(true);
-            }
-        }
-
-        // Setup Columns
+        // Setup Columns for Event Table
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
         colVenue.setCellValueFactory(new PropertyValueFactory<>("venue"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
         colSeats.setCellValueFactory(new PropertyValueFactory<>("seats"));
 
-        // Search logic
-        txtSearch.textProperty().addListener((obs, old, newValue) -> searchEvents(newValue));
+        // Setup Columns for Bookings Table
+        colTicketId.setCellValueFactory(new PropertyValueFactory<>("ticketId"));
+        colBookedEvent.setCellValueFactory(new PropertyValueFactory<>("eventName"));
+        colBookedDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        colBookedSeat.setCellValueFactory(new PropertyValueFactory<>("seatNumber"));
+        colPaid.setCellValueFactory(new PropertyValueFactory<>("amountPaid"));
 
-        // Start on Browse mode
+        // Real-time Search Listener
+        txtSearch.textProperty().addListener((obs, old, val) -> searchEvents(val));
+
+        // Default View
         handleBrowse();
     }
 
     private void refreshHeader() {
-        User u = UserSession.getInstance().getCurrentUser();
-        lblWelcome.setText("Welcome, " + u.getFullName());
-        lblTier.setText(u.getTier().toUpperCase() + " TIER");
-        lblBalance.setText("Wallet: $" + String.format("%.2f", u.getBalance()));
-    }
-
-    @FXML
-    private void handleAdminPanel() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/admin_panel.fxml"));
-            Stage stage = (Stage) btnAdmin.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Admin Command Center");
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (UserSession.getInstance() != null) {
+            User u = UserSession.getInstance().getCurrentUser();
+            lblWelcome.setText("Welcome, " + u.getFullName());
+            lblTier.setText(u.getTier().toUpperCase() + " TIER");
+            lblBalance.setText("Wallet: $" + String.format("%.2f", u.getBalance()));
         }
     }
 
     @FXML
     private void handleBrowse() {
-        lblViewTitle.setText("CURRENTLY VIEWING: ALL EVENTS");
+        lblTableTitle.setText("Upcoming Experiences");
+        tblEvents.setVisible(true);
+        tblBookings.setVisible(false);
+        btnBook.setVisible(true);
+        btnCancel.setVisible(false);
+        btnDownload.setVisible(false);
 
-        // Fix Sidebar Styling
-        btnBrowse.setStyle("-fx-background-color: #3949AB; -fx-background-radius: 8; -fx-text-fill: white;");
+        btnBrowse.setStyle("-fx-background-color: #3949AB; -fx-text-fill: white; -fx-background-radius: 8;");
         btnMyTickets.setStyle("-fx-background-color: transparent; -fx-text-fill: #c5cae9;");
 
-        btnBook.setDisable(false);
-        btnCancel.setDisable(true);
         loadEvents("SELECT * FROM events");
     }
 
     @FXML
     private void handleMyTickets() {
-        lblViewTitle.setText("CURRENTLY VIEWING: MY BOOKINGS");
+        lblTableTitle.setText("My Booked Tickets");
+        tblEvents.setVisible(false);
+        tblBookings.setVisible(true);
+        btnBook.setVisible(false);
+        btnCancel.setVisible(true);
+        btnDownload.setVisible(true);
 
-        // Fix Sidebar Styling
-        btnMyTickets.setStyle("-fx-background-color: #3949AB; -fx-background-radius: 8; -fx-text-fill: white;");
+        btnMyTickets.setStyle("-fx-background-color: #3949AB; -fx-text-fill: white; -fx-background-radius: 8;");
         btnBrowse.setStyle("-fx-background-color: transparent; -fx-text-fill: #c5cae9;");
 
-        btnBook.setDisable(true);
-        btnCancel.setDisable(false);
-
-        String user = UserSession.getInstance().getCurrentUser().getUsername();
-        loadEvents("SELECT e.* FROM events e JOIN tickets t ON e.event_id = t.event_id WHERE t.username = '" + user + "'");
+        loadMyTickets();
     }
 
     private void loadEvents(String query) {
         allEvents.clear();
-        User currentUser = UserSession.getInstance().getCurrentUser();
-
+        User u = UserSession.getInstance().getCurrentUser();
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                double basePrice = rs.getDouble("price");
-                // APPLY DISCOUNT HERE so the table shows the Member Price
-                double memberPrice = currentUser.calculateDiscountedPrice(basePrice);
-
-                allEvents.add(new Event(
-                        rs.getInt("event_id"),
-                        rs.getString("event_name"),
-                        rs.getString("event_date"),
-                        rs.getString("venue"),
-                        memberPrice, // Use the calculated price
-                        rs.getInt("available_seats")
-                ));
+                // Apply individual user discount to the price shown in the table
+                double memberPrice = u.calculateDiscountedPrice(rs.getDouble("price"));
+                allEvents.add(new Event(rs.getInt("event_id"), rs.getString("event_name"),
+                        rs.getString("event_date"), rs.getString("venue"), memberPrice, rs.getInt("available_seats")));
             }
             tblEvents.setItems(allEvents);
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    private void loadMyTickets() {
+        ObservableList<Ticket> myList = FXCollections.observableArrayList();
+        User u = UserSession.getInstance().getCurrentUser();
+        String query = "SELECT t.ticket_id, t.event_id, e.event_name, e.venue, e.event_date, t.seat_number, t.amount_paid " +
+                "FROM tickets t JOIN events e ON t.event_id = e.event_id WHERE t.username = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, u.getUsername());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                myList.add(new Ticket(rs.getInt("ticket_id"), rs.getInt("event_id"), rs.getString("event_name"),
+                        rs.getString("venue"), rs.getString("event_date"), rs.getString("seat_number"),
+                        rs.getDouble("amount_paid"), u.getFullName()));
+            }
+            tblBookings.setItems(myList);
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -128,7 +134,9 @@ public class TicketingController {
         if (text == null || text.isEmpty()) { tblEvents.setItems(allEvents); return; }
         ObservableList<Event> filtered = FXCollections.observableArrayList();
         for (Event e : allEvents) {
-            if (e.getName().toLowerCase().contains(text.toLowerCase())) filtered.add(e);
+            if (e.getName().toLowerCase().contains(text.toLowerCase()) || e.getVenue().toLowerCase().contains(text.toLowerCase())) {
+                filtered.add(e);
+            }
         }
         tblEvents.setItems(filtered);
     }
@@ -139,113 +147,156 @@ public class TicketingController {
         User user = UserSession.getInstance().getCurrentUser();
 
         if (selected == null) {
-            showSimpleAlert("Selection Required", "Please select an event.");
+            showSimpleAlert("Selection Required", "Please select an event from the table.");
             return;
         }
 
-        // ADD THIS CHECK: Don't even open the seat map if it's sold out
         if (selected.getSeatsNum() <= 0) {
-            showSimpleAlert("Sold Out", "This event is currently sold out!");
+            showSimpleAlert("Sold Out", "Sorry, this event is already sold out!");
             return;
         }
 
         try {
-            // 1. OPEN THE SEAT MAP WINDOW
+            // 1. Open Dynamic Seat Map
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/seat_selection.fxml"));
             Parent root = loader.load();
-            SeatMapController controller = loader.getController();
-            controller.setData(selected);
+            SeatMapController smc = loader.getController();
+
+            // Pass the current user so the map can calculate tier-specific prices
+            smc.setData(selected, user);
 
             Stage stage = new Stage();
             stage.setTitle("Select Seat - " + selected.getName());
             stage.setScene(new Scene(root));
-            stage.showAndWait(); // Program pauses here until you close seat map
+            stage.showAndWait(); // Wait for user to pick a seat
 
-            String chosenSeat = controller.getSelectedSeat();
-            if (chosenSeat == null) return; // User closed window without picking
+            String chosenSeat = smc.getSelectedSeat();
+            double calculatedPrice = smc.getFinalPrice();
 
-            // 2. CALCULATE DIFFERENTIAL PRICING
-            double basePrice = selected.getPrice();
-            double seatPremium = chosenSeat.startsWith("A") ? 100.0 : 0.0; // Row A is VIP
-            double subtotal = basePrice + seatPremium;
-            double finalPrice = user.calculateDiscountedPrice(subtotal);
+            if (chosenSeat == null) return; // User closed without picking
 
-            // 3. SHOW SUMMARY POPUP
-            Alert summary = new Alert(Alert.AlertType.CONFIRMATION);
-            summary.setTitle("Booking Summary");
-            summary.setHeaderText("Confirm your transaction");
-            summary.setContentText(
-                    "Event: " + selected.getName() + "\n" +
-                            "Seat: " + chosenSeat + (seatPremium > 0 ? " (VIP Premium)" : "") + "\n\n" +
-                            "Base Price: $" + basePrice + "\n" +
-                            "Seat Premium: +$" + seatPremium + "\n" +
-                            "Tier Discount (" + user.getTier() + "): -$" + (subtotal - finalPrice) + "\n" +
-                            "----------------------------\n" +
-                            "FINAL TOTAL: $" + String.format("%.2f", finalPrice)
-            );
+            // 2. Summary & Confirmation
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Booking Confirmation");
+            confirm.setHeaderText("Verify Transaction Details");
+            confirm.setContentText("Event: " + selected.getName() +
+                    "\nSeat: " + chosenSeat +
+                    "\nFinal Total (Discount Applied): $" + String.format("%.2f", calculatedPrice));
 
-            if (summary.showAndWait().get() == ButtonType.OK) {
-                // 4. CHECK BALANCE & EXECUTE SQL
-                if (user.getBalance() < finalPrice) {
-                    showSimpleAlert("Insufficient Funds", "You need more money!");
+            if (confirm.showAndWait().get() == ButtonType.OK) {
+                if (user.getBalance() < calculatedPrice) {
+                    showSimpleAlert("Insufficient Funds", "You do not have enough credits in your wallet.");
                     return;
                 }
-
-                processBooking(user, selected, chosenSeat, finalPrice);
+                processTransaction(user, selected, chosenSeat, calculatedPrice);
             }
-
-        } catch (IOException | SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    private void processBooking(User u, Event e, String seat, double price) throws SQLException {
+    private void processTransaction(User u, Event e, String seat, double price) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Enable Transaction atomic safety
             try {
-                // A. Insert Ticket
-                PreparedStatement ps1 = conn.prepareStatement("INSERT INTO tickets (username, event_id, amount_paid, seat_number) VALUES (?, ?, ?, ?)");
+                // A. Record the ticket with seat number
+                PreparedStatement ps1 = conn.prepareStatement("INSERT INTO tickets (username, event_id, amount_paid, seat_number) VALUES (?,?,?,?)");
                 ps1.setString(1, u.getUsername());
                 ps1.setInt(2, e.getId());
                 ps1.setDouble(3, price);
                 ps1.setString(4, seat);
                 ps1.executeUpdate();
 
-                // B. Update Seats & Balance
-                conn.prepareStatement("UPDATE events SET available_seats = available_seats - 1 WHERE event_id = " + e.getId()).executeUpdate();
-                conn.prepareStatement("UPDATE users SET balance = balance - " + price + " WHERE username = '" + u.getUsername() + "'").executeUpdate();
+                // B. Reduce capacity
+                PreparedStatement ps2 = conn.prepareStatement("UPDATE events SET available_seats = available_seats - 1 WHERE event_id = ?");
+                ps2.setInt(1, e.getId());
+                ps2.executeUpdate();
 
-                conn.commit();
-                u.setBalance(u.getBalance() - price);
+                // C. Deduct Wallet
+                PreparedStatement ps3 = conn.prepareStatement("UPDATE users SET balance = balance - ? WHERE username = ?");
+                ps3.setDouble(1, price);
+                ps3.setString(2, u.getUsername());
+                ps3.executeUpdate();
+
+                conn.commit(); // Save all changes at once
+
+                u.setBalance(u.getBalance() - price); // Update local object
                 refreshHeader();
                 handleBrowse();
-                showSimpleAlert("Success", "Enjoy the show! Seat " + seat + " is yours.");
-            } catch (SQLException ex) { conn.rollback(); throw ex; }
+                showSimpleAlert("Success!", "Booking confirmed. You can find your ticket in 'My Bookings'.");
+
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex;
+            }
         }
     }
 
     @FXML
     private void handleCancelTicket() {
-        Event sel = tblEvents.getSelectionModel().getSelectedItem();
+        Ticket selected = tblBookings.getSelectionModel().getSelectedItem();
         User u = UserSession.getInstance().getCurrentUser();
-        if (sel == null) return;
+        if (selected == null) return;
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                ResultSet rs = conn.createStatement().executeQuery("SELECT amount_paid FROM tickets WHERE username = '"+u.getUsername()+"' AND event_id = "+sel.getId()+" LIMIT 1");
-                double refund = rs.next() ? rs.getDouble("amount_paid") : 0;
+        Alert confirm = new Alert(Alert.AlertType.WARNING, "Cancel ticket for " + selected.getEventName() + "?", ButtonType.YES, ButtonType.NO);
+        if (confirm.showAndWait().get() == ButtonType.YES) {
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                conn.setAutoCommit(false);
+                try {
+                    // Delete from tickets
+                    PreparedStatement ps1 = conn.prepareStatement("DELETE FROM tickets WHERE ticket_id = ?");
+                    ps1.setInt(1, selected.getTicketId());
+                    ps1.executeUpdate();
 
-                conn.prepareStatement("DELETE FROM tickets WHERE username = '"+u.getUsername()+"' AND event_id = "+sel.getId()+" LIMIT 1").executeUpdate();
-                conn.prepareStatement("UPDATE events SET available_seats = available_seats + 1 WHERE event_id = "+sel.getId()).executeUpdate();
-                conn.prepareStatement("UPDATE users SET balance = balance + "+refund+" WHERE username = '"+u.getUsername()+"'").executeUpdate();
+                    // Restore seat count
+                    PreparedStatement ps2 = conn.prepareStatement("UPDATE events SET available_seats = available_seats + 1 WHERE event_id = ?");
+                    ps2.setInt(1, selected.getEventId());
+                    ps2.executeUpdate();
 
-                conn.commit();
-                u.setBalance(u.getBalance() + refund);
-                refreshHeader();
-                handleMyTickets();
-            } catch (SQLException e) { conn.rollback(); }
-        } catch (SQLException e) { e.printStackTrace(); }
+                    // Refund balance (Uses amount_paid stored in ticket)
+                    PreparedStatement ps3 = conn.prepareStatement("UPDATE users SET balance = balance + ? WHERE username = ?");
+                    ps3.setDouble(1, selected.getAmountPaid());
+                    ps3.setString(2, u.getUsername());
+                    ps3.executeUpdate();
+
+                    conn.commit();
+                    u.setBalance(u.getBalance() + selected.getAmountPaid());
+                    refreshHeader();
+                    handleMyTickets();
+                    showSimpleAlert("Cancelled", "Ticket has been refunded to your wallet.");
+                } catch (SQLException ex) { conn.rollback(); }
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    @FXML
+    private void handleDownloadVoucher() {
+        Ticket sel = tblBookings.getSelectionModel().getSelectedItem();
+        if (sel == null) {
+            showSimpleAlert("Selection Required", "Please select a ticket from your bookings list.");
+            return;
+        }
+
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Save Digital Voucher");
+        fc.setInitialFileName("Ticket_" + sel.getEventName().replace(" ", "_") + ".txt");
+        File file = fc.showSaveDialog(lblWelcome.getScene().getWindow());
+
+        if (file != null) {
+            try (PrintWriter pw = new PrintWriter(file)) {
+                pw.println("==========================================");
+                pw.println("       ELITE EVENT CENTER VOUCHER         ");
+                pw.println("==========================================");
+                pw.println(" TICKET ID : #" + sel.getTicketId());
+                pw.println(" EVENT     : " + sel.getEventName());
+                pw.println(" DATE      : " + sel.getDate());
+                pw.println(" VENUE     : " + sel.getVenue());
+                pw.println(" SEAT      : " + sel.getSeatNumber());
+                pw.println("------------------------------------------");
+                pw.println(" ATTENDEE  : " + sel.getBuyerName());
+                pw.println(" STATUS    : PAID ($" + String.format("%.2f", sel.getAmountPaid()) + ")");
+                pw.println("==========================================");
+                showSimpleAlert("Voucher Saved", "Digital ticket saved to: " + file.getName());
+            } catch (Exception e) { e.printStackTrace(); }
+        }
     }
 
     @FXML
@@ -253,6 +304,8 @@ public class TicketingController {
         UserSession.cleanUserSession();
         Stage s = (Stage) lblWelcome.getScene().getWindow();
         s.setScene(new Scene(FXMLLoader.load(getClass().getResource("/login.fxml"))));
+        s.setTitle("Event Center Login");
+        s.centerOnScreen();
     }
 
     private void showSimpleAlert(String title, String content) {

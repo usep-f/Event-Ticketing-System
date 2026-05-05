@@ -7,7 +7,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.stage.Stage; // Import this!
+import javafx.stage.Stage;
+import java.io.IOException;
 
 public class LoginController {
 
@@ -30,30 +31,49 @@ public class LoginController {
         User user = userDAO.login(username, password);
 
         if (user != null) {
+            // 1. Store the user in the global session
             UserSession.setInstance(user);
-            // 1. Success Message
             showAlert(AlertType.INFORMATION, "Login Successful!", "Welcome " + user.getFullName());
 
-            // 2. SWITCH TO THE TICKETING DASHBOARD
+            // 2. Role-Based Redirection
             try {
-                // Point this to your actual dashboard FXML file name
-                Parent root = FXMLLoader.load(getClass().getResource("/ticketing.fxml"));
+                String fxmlFile;
+                String title;
 
-                // Get the current window (Stage)
+                if (user.getRole().equalsIgnoreCase("Admin")) {
+                    fxmlFile = "/admin_panel.fxml";
+                    title = "Admin Command Center";
+                } else {
+                    fxmlFile = "/ticketing.fxml";
+                    title = "Event Ticketing System - " + user.getFullName();
+                }
+
+                Parent root = FXMLLoader.load(getClass().getResource(fxmlFile));
                 Stage stage = (Stage) btnLogin.getScene().getWindow();
-
-                // Set the new scene (The Ticketing Dashboard)
                 stage.setScene(new Scene(root));
-                stage.setTitle("Event Ticketing System - " + user.getFullName());
+                stage.setTitle(title);
+                stage.centerOnScreen();
                 stage.show();
 
-            } catch (java.io.IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-                showAlert(AlertType.ERROR, "Error", "Could not load the dashboard file. Check the file name.");
+                showAlert(AlertType.ERROR, "Error", "Could not load the destination screen.");
             }
 
         } else {
             showAlert(AlertType.ERROR, "Login Failed!", "Invalid Username or Password");
+        }
+    }
+
+    @FXML
+    private void handleCreateAccount() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/register.fxml"));
+            Stage stage = (Stage) txtUsername.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Create Account");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -63,16 +83,5 @@ public class LoginController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    @FXML
-    private void handleCreateAccount() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/register.fxml"));
-            Stage stage = (Stage) txtUsername.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
     }
 }

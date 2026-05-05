@@ -9,6 +9,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.*;
+import javafx.scene.control.ButtonType;
 
 public class TicketingController {
 
@@ -18,11 +19,24 @@ public class TicketingController {
     @FXML private TableColumn<Event, Double> colPrice;
     @FXML private Button btnBrowse, btnMyTickets, btnBook, btnCancel;
     @FXML private TextField txtSearch;
+    @FXML private Button btnAdmin;
 
     private ObservableList<Event> allEvents = FXCollections.observableArrayList();
 
     public void initialize() {
         refreshHeader();
+
+        if (UserSession.getInstance() != null) {
+            User u = UserSession.getInstance().getCurrentUser();
+            lblWelcome.setText("Welcome, " + u.getFullName());
+            lblTier.setText(u.getTier().toUpperCase() + " TIER");
+            lblBalance.setText("Wallet: $" + String.format("%.2f", u.getBalance()));
+
+            // --- ADD THIS SECURITY CHECK ---
+            if (u.getRole().equalsIgnoreCase("Admin")) {
+                btnAdmin.setVisible(true);
+            }
+        }
 
         // Setup Columns
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -43,6 +57,18 @@ public class TicketingController {
         lblWelcome.setText("Welcome, " + u.getFullName());
         lblTier.setText(u.getTier().toUpperCase() + " TIER");
         lblBalance.setText("Wallet: $" + String.format("%.2f", u.getBalance()));
+    }
+
+    @FXML
+    private void handleAdminPanel() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/admin_panel.fxml"));
+            Stage stage = (Stage) btnAdmin.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Admin Command Center");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -113,7 +139,13 @@ public class TicketingController {
         User user = UserSession.getInstance().getCurrentUser();
 
         if (selected == null) {
-            showSimpleAlert("Selection Required", "Please select an event first.");
+            showSimpleAlert("Selection Required", "Please select an event.");
+            return;
+        }
+
+        // ADD THIS CHECK: Don't even open the seat map if it's sold out
+        if (selected.getSeatsNum() <= 0) {
+            showSimpleAlert("Sold Out", "This event is currently sold out!");
             return;
         }
 

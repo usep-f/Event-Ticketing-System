@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="600.0" prefWidth="900.0" style="-fx-background-color: #EBEDF0;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fx.com/fxml/1" fx:controller="AdminController">
+    <children>
+        <!-- Sidebar (Consistent with Main) -->
+        <VBox prefHeight="600.0" prefWidth="220.0" style="-fx-background-color: #1A237E;" spacing="10">
+            <children>
+                <Label text="ADMIN CENTER" textFill="WHITE" style="-fx-padding: 30 20;">
+                    <font><Font name="System Bold" size="18.0" /></font>
+                </Label>
+                <Button onAction="#handleLogout" prefWidth="220" style="-fx-background-color: transparent;" text="⬅ Logout" textFill="WHITE" />
+            </children>
+        </VBox>
+
+        <!-- Main Content -->
+        <VBox layoutX="240.0" layoutY="20.0" prefHeight="560.0" prefWidth="640.0" spacing="15.0">
+            <children>
+                <Label text="Event Management" textFill="#1a237e"><font><Font name="System Bold" size="24.0" /></font></Label>
+
+                <!-- Event Entry Form -->
+                <GridPane hgap="10" vgap="10" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
+                    <children>
+                        <TextField fx:id="txtEventName" promptText="Event Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <TextField fx:id="txtEventDate" promptText="Date (e.g. Oct 24, 2025)" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <ComboBox fx:id="comboVenue" promptText="Select Venue" prefWidth="200" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <TextField fx:id="txtPrice" promptText="Base Price" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Button onAction="#handleAddEvent" prefWidth="150" style="-fx-background-color: #2E7D32;" text="➕ Add Event" textFill="WHITE" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                    </children>
+                </GridPane>
+
+                <!-- Current Events Table -->
+                <TableView fx:id="tblAdminEvents" prefHeight="300.0" prefWidth="640.0">
+                    <columns>
+                        <TableColumn fx:id="colId" prefWidth="50" text="ID" />
+                        <TableColumn fx:id="colName" prefWidth="200" text="Event Name" />
+                        <TableColumn fx:id="colVenue" prefWidth="150" text="Venue" />
+                        <TableColumn fx:id="colPrice" prefWidth="100" text="Price" />
+                    </columns>
+                </TableView>
+
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <children>
+                        <Button onAction="#handleDeleteEvent" style="-fx-background-color: #D32F2F;" text="🗑 Delete Selected" textFill="WHITE" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

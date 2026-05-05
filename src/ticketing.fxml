@@ -40,6 +40,9 @@
                   <Button fx:id="btnMyTickets" alignment="BASELINE_LEFT" onAction="#handleMyTickets" prefHeight="45.0" prefWidth="200.0" style="-fx-background-color: transparent; -fx-background-radius: 8;" text="  🎫  My Bookings" textFill="#c5cae9">
                      <font><Font size="13.0" /></font>
                   </Button>
+                  <Button fx:id="btnAdmin" alignment="BASELINE_LEFT" onAction="#handleAdminPanel" prefHeight="45.0" prefWidth="200.0" style="-fx-background-color: #f39c12; -fx-background-radius: 8;" text="  🛠  Admin Panel" textFill="WHITE" visible="false">
+                     <font><Font name="System Bold" size="13.0" /></font>
+                  </Button>
                </children>
             </VBox>
 

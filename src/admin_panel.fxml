@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.chart.*?>
 
 <AnchorPane prefHeight="600.0" prefWidth="900.0" style="-fx-background-color: #EBEDF0;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fx.com/fxml/1" fx:controller="AdminController">
     <children>
@@ -14,6 +15,7 @@
                 </Label>
                 <Button fx:id="btnViewEvents" onAction="#showEventsPane" prefWidth="220" style="-fx-background-color: #3949AB; -fx-text-fill: white;" text="📅 Manage Events" />
                 <Button fx:id="btnViewUsers" onAction="#showUsersPane" prefWidth="220" style="-fx-background-color: transparent; -fx-text-fill: #c5cae9;" text="👥 Manage Users" />
+                <Button fx:id="btnViewAnalytics" onAction="#showAnalyticsPane" prefWidth="220" style="-fx-background-color: transparent; -fx-text-fill: #c5cae9;" text="📊 Sales Analytics" />
                 <Region VBox.vgrow="ALWAYS" />
                 <Button onAction="#handleLogout" prefWidth="220" style="-fx-background-color: transparent;" text="↳ Logout" textFill="#c5cae9" />
             </children>
@@ -22,7 +24,8 @@
         <!-- Content Area -->
         <StackPane layoutX="240.0" layoutY="20.0" prefHeight="560.0" prefWidth="640.0">
             <children>
-                <!-- EVENT MANAGEMENT PANE -->
+
+                <!-- PANE 1: EVENT MANAGEMENT -->
                 <VBox fx:id="paneEvents" spacing="15.0">
                     <children>
                         <Label text="Event Management" textFill="#1a237e"><font><Font name="System Bold" size="24.0" /></font></Label>
@@ -47,11 +50,11 @@
                     </children>
                 </VBox>
 
-                <!-- USER MANAGEMENT PANE -->
+                <!-- PANE 2: USER MANAGEMENT -->
                 <VBox fx:id="paneUsers" spacing="15.0" visible="false">
                     <children>
                         <Label text="User Account Management" textFill="#1a237e"><font><Font name="System Bold" size="24.0" /></font></Label>
-                        <TableView fx:id="tblUsers" prefHeight="350.0">
+                        <TableView fx:id="tblUsers" prefHeight="300.0">
                             <columns>
                                 <TableColumn fx:id="colUserUsername" prefWidth="120" text="Username" />
                                 <TableColumn fx:id="colUserFullName" prefWidth="200" text="Full Name" />
@@ -59,8 +62,6 @@
                                 <TableColumn fx:id="colUserBalance" prefWidth="120" text="Balance" />
                             </columns>
                         </TableView>
-
-                        <!-- Account Editor Form -->
                         <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: #E0E0E0;">
                             <children>
                                 <Label text="Modify Selected Account" style="-fx-font-weight: bold;" textFill="#757575" />
@@ -77,6 +78,34 @@
                         </VBox>
                     </children>
                 </VBox>
+
+                <!-- PANE 3: ANALYTICS PANE -->
+                <VBox fx:id="paneAnalytics" spacing="20.0" visible="false" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25;">
+                    <children>
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <VBox>
+                                    <children>
+                                        <Label text="Sales Performance" textFill="#1a237e"><font><Font name="System Bold" size="22.0" /></font></Label>
+                                        <Label text="Revenue breakdown by event" textFill="#757575" />
+                                    </children>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <VBox alignment="CENTER_RIGHT" style="-fx-background-color: #F1F3F9; -fx-padding: 10 20; -fx-background-radius: 10;">
+                                    <children>
+                                        <Label text="TOTAL REVENUE" textFill="#3949AB" style="-fx-font-weight: bold; -fx-font-size: 10;" />
+                                        <Label fx:id="lblTotalRevenue" text="\$0.00" textFill="#2E7D32"><font><Font name="System Bold" size="20.0" /></font></Label>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                        <BarChart fx:id="chartSales" prefHeight="400.0" legendVisible="false">
+                            <xAxis><CategoryAxis label="Event Name" side="BOTTOM" /></xAxis>
+                            <yAxis><NumberAxis label="Revenue ($)" side="LEFT" /></yAxis>
+                        </BarChart>
+                    </children>
+                </VBox>
+
             </children>
         </StackPane>
     </children>
